@@ -1,0 +1,24 @@
+/* Neumorphism.css */
+.neumorphic {
+  background: #e2e3e3;
+  border-radius: 10px;
+  box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+    -9px -9px 16px rgba(255, 255, 255, 0.5);
+}
+
+.neumorphic-inset {
+  background: #e0e5ec;
+  border-radius: 10px;
+  box-shadow: inset 9px 9px 16px rgba(163, 177, 198, 0.6),
+    inset -9px -9px 16px rgba(255, 255, 255, 0.5);
+}
+
+.neumorphic-button {
+  background: #e0e5ec;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 5px 5px 10px #a3b1c6, -5px -5px 10px #ffffff;
+  cursor: pointer;
+  font-size: 16px;
+}
