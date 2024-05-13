@@ -1,0 +1,2 @@
+# public/_redirects
+/api/*  https://jsonplaceholder.typicode.com/posts/:splat  200
