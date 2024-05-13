@@ -8,7 +8,6 @@ exports.handler = async (event) => {
   }
 
   const busboy = Busboy({ headers: event.headers });
-
   return new Promise((resolve, reject) => {
     const store = getStore({
       name: "your_store_name",
@@ -16,41 +15,40 @@ exports.handler = async (event) => {
       token: process.env.NETLIFY_ACCESS_TOKEN,
     });
 
-    busboy.on("file", async (filenames, file, info) => {
+    busboy.on("file", (filenames, file, info) => {
       const { filename, encoding, mimeType } = info;
-
-      console.log("INFO", info);
-
       let buffers = [];
+
       file.on("data", (data) => {
-        buffers.push(data);
+        buffers.push(data); // Collect data chunks
       });
 
       file.on("end", async () => {
         const imageBuffer = Buffer.concat(buffers);
-        const imageBase64 = imageBuffer.toString("base64");
+        const imageBase64 = imageBuffer.toString("base64"); // Convert the buffer to a base64 string
 
         const metadata = {
           filename,
           mimeType,
-          imageBase64,
           encoding,
-        }; // Add more metadata as needed
+          imageBase64,
+          // You could also store the base64 string size or other relevant metadata here
+        };
 
         try {
-          await store.set(filename, imageBuffer, { metadata });
-          console.log("Uploading image with key:", filename);
-
+          // Store the base64 string instead of the buffer
+          await store.set(filename, imageBase64, { metadata });
           resolve({
             statusCode: 200,
             body: JSON.stringify({
               message: "Image uploaded successfully!",
               key: filename,
               mimeType,
-              encoding: encoding,
+              encoding,
             }),
           });
         } catch (error) {
+          console.error("Failed to upload image:", error);
           reject({
             statusCode: 500,
             body: JSON.stringify({

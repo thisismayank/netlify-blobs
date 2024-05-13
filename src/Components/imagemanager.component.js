@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import "./neumorphism.css";
+
 import {
   Button,
+  TextField,
   Box,
   InputLabel,
   MenuItem,
@@ -75,22 +76,25 @@ function ImageManager() {
   };
 
   const handleUpload = async () => {
-    if (!file || !selectedStore) {
+    if (!file) {
       alert("Please select a file and a store first!");
       return;
     }
 
+    console.log("SELECTED STORE", selectedStore);
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("store", selectedStore);
+    // formData.append("store", selectedStore);
 
     try {
       const response = await fetch("/.netlify/functions/uploadImage", {
         method: "POST",
         body: formData,
       });
+
+      console.log("upload image error", response);
       if (response.ok) {
-        await response.json();
+        const data = await response.json();
         alert("Upload Successful!");
         fetchImages(); // Refresh images after upload
       } else {
@@ -178,112 +182,212 @@ function ImageManager() {
     );
   };
 
+  const neuStyle = {
+    backgroundColor: "#e0e5ec",
+    boxShadow: "4px 4px 10px #a3b1c6, -4px -4px 10px #ffffff",
+    "&:hover": {
+      boxShadow: "none",
+      backgroundColor: "#e0e5ec",
+    },
+  };
+
+  const [decodedContent, setDecodedContent] = useState("");
+
+  const decodeBase64 = () => {
+    try {
+      const decodedData = atob(imageData.imageBase64); // Decode Base64 string
+      setDecodedContent(decodedData);
+      console.log(decodedData); // Log or process the decoded data
+      // If the content represents an image, for example, you might set it as the source of an <img> element
+    } catch (error) {
+      console.error("Failed to decode Base64 string:", error);
+    }
+  };
+
+  const handleCopy = async (data) => {
+    try {
+      await navigator.clipboard.writeText(data);
+      alert("Data copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
   return (
-    <Box
-      className="neumorphic"
-      sx={{ p: 4, maxWidth: 800, margin: "auto", mt: 6 }}
-    >
+    <Box sx={{ p: 4 }}>
+      <Typography
+        variant="h4"
+        component="h1"
+        sx={{ fontWeight: "bold", textAlign: "center", mb: 0, pb: 0 }}
+        style={{ textAlign: "center" }}
+      >
+        Netlify Blobs
+      </Typography>
       <Typography
         variant="body2"
         color="text.secondary"
-        sx={{ textAlign: "center", mb: 3 }}
+        // component="h1"
+        style={{ textAlign: "center" }}
       >
-        {`Select store > upload > manage Files`}
+        Upload and Manage Files
       </Typography>
 
-      <FormControl fullWidth variant="standard" sx={{ mb: 2 }}>
-        <InputLabel id="store-select-label">Select Store</InputLabel>
-        <Select
-          labelId="store-select-label"
-          id="demo-simple-select-standard"
-          value={selectedStore}
-          onChange={handleStoreChange}
-          label="Store"
-          className="neumorphic-inset"
-        >
-          {stores.map((store, index) => (
-            <MenuItem key={index} value={store}>
-              {store}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <select onChange={handleStoreChange} value={selectedStore}>
+        {stores.map((store, index) => (
+          <option key={index} value={store}>
+            {store}
+          </option>
+        ))}
+      </select>
+      <button onClick={fetchImages}>Fetch Images</button>
+      <input type="file" onChange={handleFileChange} accept="image/*" />
+      <button onClick={handleUpload}>Upload Image</button>
+      <button onClick={createNewStore}>Create New Store</button>
 
-      <Button
-        className="neumorphic-button"
-        onClick={fetchImages}
-        sx={{ mb: 2, width: "100%" }}
-      >
-        Fetch Images from {selectedStore} Store
-      </Button>
-
-      <Divider sx={{ my: 2 }} />
-
-      <input
-        type="file"
-        onChange={handleFileChange}
-        accept="*"
-        className="neumorphic-inset"
-        style={{ width: "100%", padding: "10px", marginBottom: "20px" }}
-      />
-      <Button
-        className="neumorphic-button"
-        onClick={handleUpload}
-        sx={{ width: "100%", mb: 2 }}
-      >
-        Upload Image
-      </Button>
-
-      <Button
-        className="neumorphic-button"
-        onClick={createNewStore}
-        sx={{ width: "100%" }}
-      >
-        Create New Store
-      </Button>
-
-      {images.length > 0 && (
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="h6">
-            Uploaded Images in {selectedStore}
-          </Typography>
-          {images
-            .filter((img) => !isDeleted(img.key))
-            .map((image, index) => (
-              <Box
-                key={index}
-                className="neumorphic-inset"
-                sx={{ my: 1, p: 2 }}
-              >
-                <Button onClick={() => fetchImageWithKey(image.key)}>
-                  {image.key}
-                </Button>
-                <Button
-                  className="neumorphic-button"
-                  onClick={() => deleteImage(image.key)}
-                >
-                  Delete
-                </Button>
-              </Box>
-            ))}
-        </Box>
-      )}
+      <div>
+        <h3>Uploaded Images in {selectedStore}</h3>
+        {images.length > 0 ? (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h6">
+              Uploaded Images in {selectedStore}
+            </Typography>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <table style={{ width: "50%" }}>
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        textAlign: "left",
+                        padding: "8px",
+                        borderBottom: "1px solid #ddd",
+                      }}
+                    >
+                      Image Key
+                    </th>
+                    <th
+                      style={{
+                        textAlign: "left",
+                        padding: "8px",
+                        borderBottom: "1px solid #ddd",
+                      }}
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {images
+                    .filter((img) => !isDeleted(img.key))
+                    .map((image, index) => (
+                      <tr key={index}>
+                        <td style={{ textAlign: "left", paddingLeft: "8px" }}>
+                          {index + 1}. <strong>{image.key}</strong>
+                        </td>
+                        <td style={{ textAlign: "center", padding: "8px" }}>
+                          <button
+                            onClick={() => fetchImageWithKey(image.key)}
+                            style={{
+                              marginRight: "8px",
+                              padding: "5px 10px",
+                              border: "none",
+                              borderRadius: "5px",
+                              cursor: "pointer",
+                              background: "#f0f0f0",
+                            }}
+                          >
+                            Fetch
+                          </button>
+                          <button
+                            onClick={() => deleteImage(image.key)}
+                            style={{
+                              padding: "5px 10px",
+                              border: "none",
+                              borderRadius: "5px",
+                              cursor: "pointer",
+                              background: "#f44336",
+                              color: "white",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </Box>
+        ) : (
+          <p>No images to display.</p>
+        )}
+      </div>
 
       {imageData.filename && (
-        <Box className="neumorphic-inset" sx={{ mt: 2, p: 2 }}>
-          <Typography variant="h6">Blob Details</Typography>
-          <Typography>Filename: {imageData.filename}</Typography>
-          <Typography>Encoding: {imageData.encoding}</Typography>
-          <Typography>Mime Type: {imageData.mimeType}</Typography>
-          <Typography>Size: {formatBytes(imageData.size)}</Typography>
-          <Typography>Base64: {imageData.imageBase64}</Typography>
-          <Button
-            className="neumorphic-button"
-            onClick={() => console.log("Deleting image")}
+        <div
+          style={{
+            backgroundColor: "#e0e5ec", // Neumorphic background color
+            padding: "20px",
+            borderRadius: "10px",
+            boxShadow: "10px 10px 20px #bebebe, -10px -10px 20px #ffffff", // Neumorphic shadows
+            margin: "20px 0",
+            textAlign: "center",
+          }}
+        >
+          <p style={{ margin: "10px 0" }}>
+            Encoding: <strong>{imageData.encoding}</strong>
+          </p>
+          <p style={{ margin: "10px 0" }}>
+            Mime Type: <strong>{imageData.mimeType}</strong>
+          </p>
+          <p style={{ margin: "10px 0" }}>
+            Size: <strong>{formatBytes(imageData.size)}</strong>
+          </p>
+          <p style={{ margin: "10px 0", wordWrap: "break-word" }}>
+            Base64: <strong>{imageData.imageBase64}</strong>
+          </p>
+          <button
+            onClick={() =>
+              handleCopy(`data:image/jpeg;base64,${imageData.imageBase64}`)
+            }
+            style={{
+              padding: "8px 16px",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              background: "#f44336",
+              color: "white",
+              boxShadow: "5px 5px 10px #a3b1c6, -5px -5px 10px #ffffff",
+              fontSize: "16px",
+              margin: "auto",
+              marginRight: 16,
+              textAlign: "center",
+            }}
+          >
+            Copy to clipboard. You can paste it in your url bar to display the
+            contents
+          </button>
+
+          <button
+            onClick={() => deleteImage(imageData.filename)}
+            style={{
+              padding: "8px 16px",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              background: "#f44336",
+              color: "white",
+              boxShadow: "5px 5px 10px #a3b1c6, -5px -5px 10px #ffffff", // Neumorphic shadows for button
+              fontSize: "16px",
+            }}
           >
             Delete
-          </Button>
-        </Box>
+          </button>
+        </div>
       )}
     </Box>
   );

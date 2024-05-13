@@ -13,7 +13,7 @@ const Navbar = () => {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" style={{ backgroundColor: "gainsboro" }}>
         <Toolbar style={{ justifyContent: "space-between" }}>
-          {location.pathname === "/blobs" && (
+          {location.pathname === "/" && (
             <>
               <img src="./logo.png" alt="logo" height={30} width={100} />
               <Typography
@@ -36,7 +36,7 @@ const Navbar = () => {
               </Link>
             </>
           )}
-          {location.pathname === "/" && (
+          {/* {location.pathname === "/" && (
             <>
               <img src="./logo.png" alt="logo" height={30} width={100} />
               <Typography
@@ -61,7 +61,7 @@ const Navbar = () => {
                 </Button>
               </Link>
             </>
-          )}
+          )} */}
         </Toolbar>
       </AppBar>
     </Box>

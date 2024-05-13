@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-
+import "./neumorphism.css";
 import {
   Button,
-  TextField,
   Box,
   InputLabel,
   MenuItem,
   Select,
   FormControl,
   Typography,
+  Divider,
 } from "@mui/material";
 
 function ImageManager() {
@@ -90,7 +90,7 @@ function ImageManager() {
         body: formData,
       });
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         alert("Upload Successful!");
         fetchImages(); // Refresh images after upload
       } else {
@@ -178,110 +178,115 @@ function ImageManager() {
     );
   };
 
-  const neuStyle = {
-    backgroundColor: "#e0e5ec",
-    boxShadow: "4px 4px 10px #a3b1c6, -4px -4px 10px #ffffff",
-    "&:hover": {
-      boxShadow: "none",
-      backgroundColor: "#e0e5ec",
-    },
-  };
-
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography
-        variant="h4"
-        component="h1"
-        sx={{ fontWeight: "bold", textAlign: "center", mb: 0, pb: 0 }}
-        style={{ textAlign: "center" }}
-      >
-        Netlify Blobs
-      </Typography>
+    <Box
+      className="neumorphic"
+      sx={{ p: 4, maxWidth: 800, margin: "auto", mt: 6 }}
+    >
       <Typography
         variant="body2"
         color="text.secondary"
-        // component="h1"
-        style={{ textAlign: "center" }}
+        sx={{ textAlign: "center", mb: 3 }}
       >
-        Upload and Manage Files
+        {`Select store > upload > manage Files`}
       </Typography>
-      <div>
-        <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
-          <InputLabel id="demo-simple-select-standard-label">
-            Select Store
-          </InputLabel>
-          <Select
-            labelId="demo-simple-select-standard-label"
-            id="demo-simple-select-standard"
-            value={selectedStore}
-            onChange={handleStoreChange}
-            label="Store"
-          >
-            {stores.map((store, index) => (
-              <MenuItem key={index} value={store}>
-                {store}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-      <select onChange={handleStoreChange} value={selectedStore}>
-        {stores.map((store, index) => (
-          <option key={index} value={store}>
-            {store}
-          </option>
-        ))}
-      </select>
-      <button onClick={fetchImages}>Fetch Images</button>
-      <input type="file" onChange={handleFileChange} accept="image/*" />
-      <button onClick={handleUpload}>Upload Image</button>
-      <button onClick={createNewStore}>Create New Store</button>
 
-      <div>
-        <h3>Uploaded Images in {selectedStore}</h3>
-        {images.length > 0 ? (
-          images
+      <FormControl fullWidth variant="standard" sx={{ mb: 2 }}>
+        <InputLabel id="store-select-label">Select Store</InputLabel>
+        <Select
+          labelId="store-select-label"
+          id="demo-simple-select-standard"
+          value={selectedStore}
+          onChange={handleStoreChange}
+          label="Store"
+          className="neumorphic-inset"
+        >
+          {stores.map((store, index) => (
+            <MenuItem key={index} value={store}>
+              {store}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Button
+        className="neumorphic-button"
+        onClick={fetchImages}
+        sx={{ mb: 2, width: "100%" }}
+      >
+        Fetch Images from {selectedStore} Store
+      </Button>
+
+      <Divider sx={{ my: 2 }} />
+
+      <input
+        type="file"
+        onChange={handleFileChange}
+        accept="*"
+        className="neumorphic-inset"
+        style={{ width: "100%", padding: "10px", marginBottom: "20px" }}
+      />
+      <Button
+        className="neumorphic-button"
+        onClick={handleUpload}
+        sx={{ width: "100%", mb: 2 }}
+      >
+        Upload Image
+      </Button>
+
+      <Button
+        className="neumorphic-button"
+        onClick={createNewStore}
+        sx={{ width: "100%" }}
+      >
+        Create New Store
+      </Button>
+
+      {images.length > 0 && (
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="h6">
+            Uploaded Images in {selectedStore}
+          </Typography>
+          {images
             .filter((img) => !isDeleted(img.key))
             .map((image, index) => (
-              <div key={image.etag}>
-                <button onClick={() => fetchImageWithKey(image.key)}>
+              <Box
+                key={index}
+                className="neumorphic-inset"
+                sx={{ my: 1, p: 2 }}
+              >
+                <Button onClick={() => fetchImageWithKey(image.key)}>
                   {image.key}
-                </button>
-                <button onClick={() => deleteImage(image.key)}>Delete</button>
-              </div>
-            ))
-        ) : (
-          <p>No images to display.</p>
-        )}
-      </div>
+                </Button>
+                <Button
+                  className="neumorphic-button"
+                  onClick={() => deleteImage(image.key)}
+                >
+                  Delete
+                </Button>
+              </Box>
+            ))}
+        </Box>
+      )}
 
-      {imageData && (
-        <div>
-          <h3>Image: {imageData.filename}</h3>(
-          <div>
-            <p>Encoding: {imageData.encoding}</p>
-            <p>Mime Type: {imageData.mimeType}</p>
-            <p>Size: {formatBytes(imageData.size)} </p>
-            <p>Base64: {imageData.imageBase64} </p>
-
-            <button onClick={() => deleteImage(imageData.filename)}>
-              Delete
-            </button>
-          </div>
-          )
-        </div>
+      {imageData.filename && (
+        <Box className="neumorphic-inset" sx={{ mt: 2, p: 2 }}>
+          <Typography variant="h6">Blob Details</Typography>
+          <Typography>Filename: {imageData.filename}</Typography>
+          <Typography>Encoding: {imageData.encoding}</Typography>
+          <Typography>Mime Type: {imageData.mimeType}</Typography>
+          <Typography>Size: {formatBytes(imageData.size)}</Typography>
+          <Typography>Base64: {imageData.imageBase64}</Typography>
+          <Button
+            className="neumorphic-button"
+            onClick={() => console.log("Deleting image")}
+          >
+            Delete
+          </Button>
+        </Box>
       )}
     </Box>
   );
 }
 
 export default ImageManager;
-{
-  /* <img
-                src={`data:image/jpeg;base64,${image.data}`}
-                alt={image.metadata.filename}
-                style={{ width: "100px", height: "auto" }}
-              />
-              <p>Filename: {image.metadata.filename}</p>
-              <p>MIME type: {image.metadata.mimetype}</p> */
-}
